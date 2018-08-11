@@ -26,7 +26,6 @@ public class MidiController : MonoBehaviour {
     AudioSource thisAudioSource;
 
 	private float[] hiddenValues = new float[17];
-	
 
 	private float soundScale = 0;
 	private float ballScale = 2;
@@ -63,34 +62,34 @@ public class MidiController : MonoBehaviour {
 		foreach (Renderer r in ground) r.material.SetFloat("_Amount", curveSmooth.Evaluate(c.knobs[6]));
 		foreach (Renderer r in ground) r.material.SetFloat("_Speed", curveSmooth.Evaluate(c.knobs[7]));
 		maskCover = 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]);
-		// slider 10
-		// slider 11
-		// slider 12
-		// slider 13
-		// slider 14
-		// slider 15
-		// slider 16
+		// knob 10
+		// knob 11
+		// knob 12
+		// knob 13
+		// knob 14
+		// knob 15
+		// knob 16
 
 
 		// Sound react
         thisAudioSource.GetSpectrumData(Samples, 0, fftWindow);
 
 		soundScale = Samples[sample] * (c.pads[1] ? 1 : 0);
-		// toggle2
-		// toggle3
-		// toggle4
-		// toggle5
-		// toggle6
-		// toggle7
-		// toggle8
-		// toggle9
-		// toggle10
-		// toggle11
-		// toggle12
-		// toggle13
-		// toggle14
-		// toggle15
-		// toggle16
+		// pad2
+		// pad3
+		// pad4
+		// pad5
+		// pad6
+		// pad7
+		// pad8
+		// pad9
+		// pad10
+		// pad11
+		// pad12
+		// pad13
+		// pad14
+		// pad15
+		// pad16
 
 		// Set variables and account for sliders and soundScale
 		ball.material.SetFloat("_Height", ballHeight + soundScale);
