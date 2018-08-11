@@ -7,9 +7,19 @@ public class MidiInput : MonoBehaviour
     static MidiInput instance;
     MidiReceiver receiver;
     Dictionary<int, float> controllers;
+    Dictionary<int, float> relativeControllers;
     Dictionary<int, float> pads;
     bool toLearn;
     int learnt;
+
+    int latestKnob = -1;
+    float latestValue = 0;
+
+    private bool receiving = false;
+
+    public static bool Receiving {
+        get { return instance.receiving; }
+    }
 
     public static int LearntChannel {
         get { return instance.learnt; }
@@ -19,6 +29,14 @@ public class MidiInput : MonoBehaviour
     {
         if (instance.controllers.ContainsKey (channel)) {
             return instance.controllers [channel];
+        } else {
+            return -1.0f;
+        }
+    }
+    public static float GetRelativeKnob (int channel)
+    {
+        if (instance.latestKnob == channel) {
+            return instance.latestValue;
         } else {
             return -1.0f;
         }
@@ -50,6 +68,7 @@ public class MidiInput : MonoBehaviour
     {
         receiver = FindObjectOfType (typeof(MidiReceiver)) as MidiReceiver;
         controllers = new Dictionary<int, float> ();
+        relativeControllers = new Dictionary<int, float> ();
         pads = new Dictionary<int, float> ();
     }
 
@@ -131,14 +150,19 @@ public class MidiInput : MonoBehaviour
 
     void Update ()
     {
+        if(receiver.IsEmpty) {
+            receiving = false;
+        } else {
+            receiving = true;
+        }
+
         while (!receiver.IsEmpty) {
             var message = receiver.PopMessage ();
             if (message.status == 0xb0) {
                 controllers [ConvertToArturiaKnobs(message.data1)] = 1.0f / 127 * message.data2;
-                if (toLearn) {
-                    learnt = message.data1;
-                    toLearn = false;
-                }
+                // relativeControllers [ConvertToArturiaKnobs(message.data1)] = -0.01f * (64 - message.data2);
+                latestKnob = ConvertToArturiaKnobs(message.data1);
+                latestValue = -0.01f * (64 - message.data2);
             }
             if (message.status == 0x90) {
                 Debug.Log("status: " + message.status + ", data1: " + message.data1 + ", data2: " + message.data2 + ", jes!");
@@ -149,5 +173,6 @@ public class MidiInput : MonoBehaviour
                 pads [ConvertToArturiaPads(message.data1)] = 0;
             }
         }
+
     }
 }

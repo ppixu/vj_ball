@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 114897640878354038}
   - component: {fileID: 82560057841784342}
   m_Layer: 0
-  m_Name: MIDI Receiver
+  m_Name: MIDIController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -311,3 +311,5 @@ MonoBehaviour:
   Objects: []
   Scale: 10
   sample: 2
+  slider: []
+  toggle: 
