@@ -6,6 +6,7 @@ using MidiJack;
 
 public class MidiController : MonoBehaviour {
 
+	public Controls c;
 	public AnimationCurve curveSmooth;
 	public AnimationCurve curveInverse;
 	public AnimationCurve curveIn;
@@ -26,8 +27,6 @@ public class MidiController : MonoBehaviour {
 
 	private float[] hiddenValues = new float[17];
 	
-	[Range(0f, 1f)] public float[] knobs;
-	public bool[] pads = new bool[17];
 
 	private float soundScale = 0;
 	private float ballScale = 2;
@@ -44,7 +43,7 @@ public class MidiController : MonoBehaviour {
         fftWindow = FFTWindow.Triangle;
 
 		for (int i = 0; i < 17; i++) {
-			hiddenValues[i] = knobs[i];
+			hiddenValues[i] = c.knobs[i];
 		}
 
     }
@@ -55,15 +54,15 @@ public class MidiController : MonoBehaviour {
 			getRelativeMidi();
 
 		// Map sliders to variables
-		ballScale = 0.2f + 30 * curveSmooth.Evaluate(knobs[0]);
-		ballHeight = 3 - 6 * curveInverse.Evaluate(knobs[1]);
-   		ballSpeed = curveSmooth.Evaluate(knobs[2]);
-		ballFresnel = 100 * curveIn.Evaluate(knobs[3]);
-   		ballRippleScale = 100 * curveSmooth.Evaluate(knobs[4]);
-		BG.color = new Color(255,255,255, curveSmooth.Evaluate(knobs[5]));
-		foreach (Renderer r in ground) r.material.SetFloat("_Amount", curveSmooth.Evaluate(knobs[6]));
-		foreach (Renderer r in ground) r.material.SetFloat("_Speed", curveSmooth.Evaluate(knobs[7]));
-		maskCover = 2.84f + 2.2f * curveSmooth.Evaluate(knobs[8]);
+		ballScale = 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]);
+		ballHeight = 3 - 6 * curveInverse.Evaluate(c.knobs[1]);
+   		ballSpeed = curveSmooth.Evaluate(c.knobs[2]);
+		ballFresnel = 100 * curveIn.Evaluate(c.knobs[3]);
+   		ballRippleScale = 100 * curveSmooth.Evaluate(c.knobs[4]);
+		BG.color = new Color(255,255,255, curveSmooth.Evaluate(c.knobs[5]));
+		foreach (Renderer r in ground) r.material.SetFloat("_Amount", curveSmooth.Evaluate(c.knobs[6]));
+		foreach (Renderer r in ground) r.material.SetFloat("_Speed", curveSmooth.Evaluate(c.knobs[7]));
+		maskCover = 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]);
 		// slider 10
 		// slider 11
 		// slider 12
@@ -76,7 +75,7 @@ public class MidiController : MonoBehaviour {
 		// Sound react
         thisAudioSource.GetSpectrumData(Samples, 0, fftWindow);
 
-		soundScale = Samples[sample] * (pads[1] ? 1 : 0);
+		soundScale = Samples[sample] * (c.pads[1] ? 1 : 0);
 		// toggle2
 		// toggle3
 		// toggle4
@@ -105,10 +104,10 @@ public class MidiController : MonoBehaviour {
 	private void getMidi() {
 
 		for (int i = 0; i < 17; i++) {
-			if (MidiInput.GetKnob(i) >= 0) knobs[i] = MidiInput.GetKnob(i);
+			if (MidiInput.GetKnob(i) >= 0) c.knobs[i] = MidiInput.GetKnob(i);
 		}
 		for (int i = 0; i < 17; i++) {
-			if (MidiInput.GetPad(i) == 1) { pads[i] = true; } else { pads[i] = false; }
+			if (MidiInput.GetPad(i) == 1) { c.pads[i] = true; } else { c.pads[i] = false; }
 		}
 
 	}	
@@ -117,12 +116,12 @@ public class MidiController : MonoBehaviour {
 		for (int i = 0; i < 17; i++) {
 			if (MidiInput.GetRelativeKnob(i) > -1) {
 				hiddenValues[i] += MidiInput.GetRelativeKnob(i);
-				knobs[i] = 1f + (-0.5f * (1f + Mathf.Cos(Mathf.PI * hiddenValues[i])));
+				c.knobs[i] = 1f + (-0.5f * (1f + Mathf.Cos(Mathf.PI * hiddenValues[i])));
 				// slider[i] = Mathf.PingPong(hiddenValues[i], 1);
 			}
 		}
 		for (int i = 0; i < 17; i++) {
-			if (MidiInput.GetPad(i) == 1) { pads[i] = true; } else { pads[i] = false; }
+			if (MidiInput.GetPad(i) == 1) { c.pads[i] = true; } else { c.pads[i] = false; }
 		}
 	}	
 
