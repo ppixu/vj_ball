@@ -12,8 +12,16 @@ public class MidiInput : MonoBehaviour
     bool toLearn;
     int learnt;
 
-    int latestKnob = -1;
-    float latestValue = 0;
+    private int latestKnob = -1;
+    private float latestValue = 0;
+
+    public static int LatestKnob {
+        get { return instance.latestKnob; }
+    }
+
+    public static float LatestValue {
+        get { return instance.latestValue; }
+    }
 
     private bool receiving = false;
 
