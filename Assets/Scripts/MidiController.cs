@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering.PostProcessing;
 using MidiJack;
+
 
 public class MidiController : MonoBehaviour {
 
@@ -30,6 +32,8 @@ public class MidiController : MonoBehaviour {
 	public GameObject PinkBG;
 	public GameObject CloudBall;
 	public GameObject CloudBG;
+
+	public PostProcessVolume postProcessingVolume;
 	private float soundScale = 0;
 	private float ballScale = 2;
 	private float ballRippleScale = 2;
@@ -45,7 +49,12 @@ public class MidiController : MonoBehaviour {
 	private float ballSpeedVelocity = 0;
 	private float maskCoverVelocity = 0;
 
+	private float ppVolumeFade = 0;
+	private float ppVolumeFadeVelocity = 0;
+
 	private float soundScaleVelocity = 0;
+
+	private float lag = .05f;
     void Start()
     {
         thisAudioSource = GetComponent<AudioSource>();
@@ -67,22 +76,22 @@ public class MidiController : MonoBehaviour {
 
 		// Map sliders to variables
 
-		ballScale = c.knobChanged[0] ? Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, .05f) : ballScale;
-		ballHeight = Mathf.SmoothDamp(ballHeight, 3 - 6 * curveInverse.Evaluate(c.knobs[1]), ref ballHeightVelocity, 0.05f);
-   		ballSpeed = Mathf.SmoothDamp(ballSpeed, curveSmooth.Evaluate(c.knobs[2]), ref ballSpeedVelocity, .05f);
-		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[3]), ref ballFresnelVelocity, .05f);
-   		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[4]), ref ballRippleScaleVelocity, .05f);
+		ballScale = c.knobChanged[0] ? Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, lag) : ballScale;
+		ballHeight = Mathf.SmoothDamp(ballHeight, 3 - 6 * curveInverse.Evaluate(c.knobs[1]), ref ballHeightVelocity, lag);
+   		ballSpeed = Mathf.SmoothDamp(ballSpeed, curveSmooth.Evaluate(c.knobs[2]), ref ballSpeedVelocity, lag);
+		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[3]), ref ballFresnelVelocity, lag);
+   		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[4]), ref ballRippleScaleVelocity, lag);
 		BG.color = new Color(255,255,255, curveSmooth.Evaluate(c.knobs[5]));
 		foreach (Renderer r in ground) r.material.SetFloat("_Amount", curveSmooth.Evaluate(c.knobs[6]));
 		foreach (Renderer r in ground) r.material.SetFloat("_Speed", curveSmooth.Evaluate(c.knobs[7]));
-		maskCover = Mathf.SmoothDamp(maskCover, 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]), ref maskCoverVelocity, .05f);
+		maskCover = Mathf.SmoothDamp(maskCover, 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]), ref maskCoverVelocity, lag);
 		// knob 10
 		// knob 11
 		// knob 12
 		// knob 13
 		// knob 14
 		// knob 15
-		// knob 16
+		ppVolumeFade = Mathf.SmoothDamp(ppVolumeFade, c.knobs[16], ref ppVolumeFadeVelocity, lag);
 
 
 		// Sound react
@@ -114,6 +123,7 @@ public class MidiController : MonoBehaviour {
 		if (ballRippleScaleVelocity != 0) ball.material.SetFloat("_Scale", ballRippleScale /* + soundScale */);
 		foreach (SkinnedMeshRenderer r in landMasks) r.SetBlendShapeWeight(0, maskCover + soundScale);
 		if (ballScaleVelocity != 0) ball.transform.localScale = new Vector3(ballScale, ballScale, ballScale);
+		if (ppVolumeFadeVelocity != 0) postProcessingVolume.weight = ppVolumeFade + soundScale;
 	}
 
 	private void getMidi() {
@@ -130,8 +140,8 @@ public class MidiController : MonoBehaviour {
 	private void getRelativeMidi() {
 		int k = MidiInput.LatestKnob;
 		hiddenValues[k] += MidiInput.LatestValue;
-		// c.knobs[k] = 1f + (-0.5f * (1f + Mathf.Cos(Mathf.PI * hiddenValues[k])));
-		c.knobs[k] = Mathf.PingPong(hiddenValues[k], 1);
+		c.knobs[k] = 1f + (-0.5f * (1f + Mathf.Cos(Mathf.PI * hiddenValues[k])));
+		// c.knobs[k] = Mathf.PingPong(hiddenValues[k], 1);
 		c.knobChanged[k] = true;
 		for (int i = 0; i < 17; i++) {
 			if (MidiInput.GetPad(i) == 1) { c.pads[i] = true; } else { c.pads[i] = false; }
@@ -140,8 +150,8 @@ public class MidiController : MonoBehaviour {
 	IEnumerator BallLerpValue (string val, float end) {
 		float begin = ball.material.GetFloat(val);
 		float t = 0;
-		while (t < 0.05f) {
-			ball.material.SetFloat(val, Mathf.Lerp(begin, end, t/0.05f));
+		while (t < lag) {
+			ball.material.SetFloat(val, Mathf.Lerp(begin, end, t/lag));
 			t = t + Time.deltaTime;
 			yield return null;
 		}
