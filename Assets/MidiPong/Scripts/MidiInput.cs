@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class MidiInput : MonoBehaviour
 {
+    public bool Arturia = false;
     static MidiInput instance;
     MidiReceiver receiver;
     Dictionary<int, float> controllers;
@@ -156,6 +157,46 @@ public class MidiInput : MonoBehaviour
             return number;
     }
 
+
+    private static int ConvertToMPKPads(int number) {
+        if (number == 20) 
+            return 1;
+        if (number == 21)
+            return 2;
+        if (number == 22) 
+            return 3;
+        if (number == 23)
+            return 4;
+        if (number == 24)
+            return 5;
+        if (number == 25)
+            return 6;
+        if (number == 26)
+            return 7;
+        if (number == 27)
+            return 8;
+        if (number == 28)
+            return 9;
+        if (number == 29)
+            return 10;
+        if (number == 30)
+            return 11;
+        if (number == 31)
+            return 12;
+        if (number == 32)
+            return 13;
+        if (number == 33)
+            return 14;
+        if (number == 34)
+            return 15;
+        if (number == 34)
+            return 16;
+        else 
+            return number;
+    }
+
+
+
     void Update ()
     {
         if(receiver.IsEmpty) {
@@ -167,18 +208,22 @@ public class MidiInput : MonoBehaviour
         while (!receiver.IsEmpty) {
             var message = receiver.PopMessage ();
             if (message.status == 0xb0) {
-                controllers [ConvertToArturiaKnobs(message.data1)] = 1.0f / 127 * message.data2;
-                // relativeControllers [ConvertToArturiaKnobs(message.data1)] = -0.01f * (64 - message.data2);
-                latestKnob = ConvertToArturiaKnobs(message.data1);
-                latestValue = -0.01f * (64 - message.data2);
+                controllers [message.data1] = 1.0f / 127 * message.data2; // MPK non-relative 1-8
+                latestKnob = ConvertToArturiaKnobs(message.data1); // Arturia
+                latestValue = -0.01f * (64 - message.data2); // Arturia
+                if (message.data1 > 8) {
+                    if (message.data2 > 0) {
+                        pads [ConvertToMPKPads(message.data1)] = 1;
+                    } 
+                    if (message.data2 == 0) {
+                        pads [ConvertToMPKPads(message.data1)] = 0;
+                    }
+                }
+            if (message.status == 0xe0) {
+                controllers [0] = 1.0f / 127 * message.data2; // MPK non-relative 0
             }
-            if (message.status == 0x90) {
-                receiving = false;
-                pads [ConvertToArturiaPads(message.data1)] = 1;
-            }
-            if (message.status == 0x80) {
-                receiving = false;
-                pads [ConvertToArturiaPads(message.data1)] = 0;
+
+
             }
         }
 

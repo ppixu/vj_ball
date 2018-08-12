@@ -13,6 +13,7 @@ public class MidiController : MonoBehaviour {
 	public AnimationCurve curveInverse;
 	public AnimationCurve curveIn;
 	public AnimationCurve curveOut;
+	public GameObject models;
 	public Renderer ball;
 	public Renderer[] ground;
 	public SkinnedMeshRenderer[] landMasks;
@@ -31,6 +32,7 @@ public class MidiController : MonoBehaviour {
 
 	public GameObject PinkBG;
 	public GameObject CloudBall;
+	public GameObject ShutterBall;
 	public GameObject CloudBG;
 
 	public PostProcessVolume bloomVolume;
@@ -81,52 +83,34 @@ public class MidiController : MonoBehaviour {
 	void Update () {
 		// Map midi to sliders
 		if(MidiInput.Receiving) 
-			getRelativeMidi();
-
-		getPads();
+			getMidi();
 
 
 		// Store previous
 
 		// Map sliders to variables
-
-		ballScale = Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, lag);
+   		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[0]), ref ballRippleScaleVelocity, lag);
 		ballHeight = Mathf.SmoothDamp(ballHeight, 3 - 6 * curveInverse.Evaluate(c.knobs[1]), ref ballHeightVelocity, lag);
-   		ballSpeed = Mathf.SmoothDamp(ballSpeed, curveSmooth.Evaluate(c.knobs[2]), ref ballSpeedVelocity, lag);
-		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[3]), ref ballFresnelVelocity, lag);
-   		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[4]), ref ballRippleScaleVelocity, lag);
-		bgColor = Mathf.SmoothDamp(bgColor, curveSmooth.Evaluate(c.knobs[5]), ref bgColorVelocity, lag); 
-		landMoveAmount = Mathf.SmoothDamp(landMoveAmount, curveSmooth.Evaluate(c.knobs[6]), ref landMoveAmountVelocity, lag);
-		landMoveSpeed = Mathf.SmoothDamp(landMoveSpeed, curveSmooth.Evaluate(c.knobs[7]), ref landMoveSpeedVelocity, lag);
+		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[2]), ref ballFresnelVelocity, lag);
+		landMoveAmount = Mathf.SmoothDamp(landMoveAmount, curveSmooth.Evaluate(c.knobs[3]), ref landMoveAmountVelocity, lag);
+		dofVolumeFade = Mathf.SmoothDamp(dofVolumeFade, c.knobs[4], ref dofVolumeFadeVelocity, lag);
+		ballScale = Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[5]), ref ballScaleVelocity, lag);
+   		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[6]), ref ballRippleScaleVelocity, lag);
+		bloomVolumeFade = Mathf.SmoothDamp(bloomVolumeFade, c.knobs[7], ref bloomVolumeFadeVelocity, lag);
 		maskCover = Mathf.SmoothDamp(maskCover, 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]), ref maskCoverVelocity, lag);
-		// knob 10
-		// knob 11
-		// knob 12
-		// knob 13
-		// knob 14
-		dofVolumeFade = Mathf.SmoothDamp(dofVolumeFade, c.knobs[15], ref dofVolumeFadeVelocity, lag);
-		bloomVolumeFade = Mathf.SmoothDamp(bloomVolumeFade, c.knobs[16], ref bloomVolumeFadeVelocity, lag);
 
 
 		// Sound react
         thisAudioSource.GetSpectrumData(Samples, 0, fftWindow);
 
-		soundScale = Samples[sample] * (c.pads[1] ? 2 : 0);
+		ShutterBall.SetActive(c.pads[1] ? true : false);
 		CloudBall.SetActive(c.pads[2] ? true : false);
 		// pad3
-		// pad4
-		// pad5
-		// pad6
-		// pad7
-		// pad8
-		// pad9
-		// pad10
-		// pad11
-		// pad12
-		// pad13
-		// pad14
-		CloudBG.SetActive(c.pads[15] ? true : false);
-		PinkBG.SetActive(c.pads[16] ? true : false);
+		models.SetActive(c.pads[4] ? true : false);
+		soundScale = Samples[sample] * (c.pads[5] ? 2 : 0);
+		BG.color = new Color(255,255,255, c.pads[6] ? 1 : 0);
+		CloudBG.SetActive(c.pads[7] ? true : false);
+		PinkBG.SetActive(c.pads[8] ? true : false);
 
 
 
@@ -144,16 +128,17 @@ public class MidiController : MonoBehaviour {
 		if (dofVolumeFadeVelocity != 0) dofVolume.weight = dofVolumeFade + soundScale;
 	}
 
-	private void getPads() {
+	private void getMidi() {
 
-		// for (int i = 0; i < 17; i++) {
-		// 	if (MidiInput.GetKnob(i) >= 0) c.knobs[i] = MidiInput.GetKnob(i);
-		// }
-		for (int i = 0; i < 17; i++) {
+		for (int i = 0; i < 9; i++) {
+			if (MidiInput.GetKnob(i) >= 0) c.knobs[i] = MidiInput.GetKnob(i);
+		}
+		for (int i = 0; i < 9; i++) {
 			if (MidiInput.GetPad(i) == 1) { c.pads[i] = true; } else { c.pads[i] = false; }
 		}
 
 	}	
+
 
 
 	private void getRelativeMidi() {
@@ -161,6 +146,7 @@ public class MidiController : MonoBehaviour {
 		hiddenValues[k] += MidiInput.LatestValue;
 		c.knobs[k] = 1f + (-0.5f * (1f + Mathf.Cos(Mathf.PI * hiddenValues[k])));
 	}
+
 	IEnumerator BallLerpValue (string val, float end) {
 		float begin = ball.material.GetFloat(val);
 		float t = 0;
