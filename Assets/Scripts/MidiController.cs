@@ -16,7 +16,7 @@ public class MidiController : MonoBehaviour {
 	public Renderer ball;
 	public Renderer[] ground;
 	public SkinnedMeshRenderer[] landMasks;
-	public Image BG;
+	public SpriteRenderer BG;
 
 	// AudioViz
     public GameObject[] Objects;
@@ -33,7 +33,8 @@ public class MidiController : MonoBehaviour {
 	public GameObject CloudBall;
 	public GameObject CloudBG;
 
-	public PostProcessVolume postProcessingVolume;
+	public PostProcessVolume bloomVolume;
+	public PostProcessVolume dofVolume;
 	private float soundScale = 0;
 	private float ballScale = 2;
 	private float ballRippleScale = 2;
@@ -42,6 +43,14 @@ public class MidiController : MonoBehaviour {
 	private float ballSpeed = 0;
 	private float maskCover = 0;
 
+	private float landMoveAmount;
+	private float landMoveSpeed;
+
+	private float bgColor;
+	private float bgColorVelocity;
+
+	private float landMoveAmountVelocity;
+	private float landMoveSpeedVelocity;
 	private float ballScaleVelocity = 0;
 	private float ballRippleScaleVelocity = 0;
 	private float ballHeightVelocity = 0;
@@ -49,11 +58,14 @@ public class MidiController : MonoBehaviour {
 	private float ballSpeedVelocity = 0;
 	private float maskCoverVelocity = 0;
 
-	private float ppVolumeFade = 0;
-	private float ppVolumeFadeVelocity = 0;
+	private float bloomVolumeFade = 0;
+	private float bloomVolumeFadeVelocity = 0;
 
+	private float dofVolumeFade = 0;
+	private float dofVolumeFadeVelocity = 0;
 	private float soundScaleVelocity = 0;
 
+	// Smoothdamp amount
 	private float lag = .05f;
     void Start()
     {
@@ -76,22 +88,22 @@ public class MidiController : MonoBehaviour {
 
 		// Map sliders to variables
 
-		ballScale = c.knobChanged[0] ? Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, lag) : ballScale;
+		ballScale = Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, lag);
 		ballHeight = Mathf.SmoothDamp(ballHeight, 3 - 6 * curveInverse.Evaluate(c.knobs[1]), ref ballHeightVelocity, lag);
    		ballSpeed = Mathf.SmoothDamp(ballSpeed, curveSmooth.Evaluate(c.knobs[2]), ref ballSpeedVelocity, lag);
 		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[3]), ref ballFresnelVelocity, lag);
    		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[4]), ref ballRippleScaleVelocity, lag);
-		BG.color = new Color(255,255,255, curveSmooth.Evaluate(c.knobs[5]));
-		foreach (Renderer r in ground) r.material.SetFloat("_Amount", curveSmooth.Evaluate(c.knobs[6]));
-		foreach (Renderer r in ground) r.material.SetFloat("_Speed", curveSmooth.Evaluate(c.knobs[7]));
+		bgColor = Mathf.SmoothDamp(bgColor, curveSmooth.Evaluate(c.knobs[5]), ref bgColorVelocity, lag); 
+		landMoveAmount = Mathf.SmoothDamp(landMoveAmount, curveSmooth.Evaluate(c.knobs[6]), ref landMoveAmountVelocity, lag);
+		landMoveSpeed = Mathf.SmoothDamp(landMoveSpeed, curveSmooth.Evaluate(c.knobs[7]), ref landMoveSpeedVelocity, lag);
 		maskCover = Mathf.SmoothDamp(maskCover, 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]), ref maskCoverVelocity, lag);
 		// knob 10
 		// knob 11
 		// knob 12
 		// knob 13
 		// knob 14
-		// knob 15
-		ppVolumeFade = Mathf.SmoothDamp(ppVolumeFade, c.knobs[16], ref ppVolumeFadeVelocity, lag);
+		dofVolumeFade = Mathf.SmoothDamp(dofVolumeFade, c.knobs[15], ref dofVolumeFadeVelocity, lag);
+		bloomVolumeFade = Mathf.SmoothDamp(bloomVolumeFade, c.knobs[16], ref bloomVolumeFadeVelocity, lag);
 
 
 		// Sound react
@@ -121,9 +133,13 @@ public class MidiController : MonoBehaviour {
 		if (ballFresnelVelocity != 0) ball.material.SetFloat("_Fresnel", ballFresnel /* + soundScale */);
 		if (ballSpeedVelocity != 0) ball.material.SetFloat("_Speed", ballSpeed /* + soundScale */);
 		if (ballRippleScaleVelocity != 0) ball.material.SetFloat("_Scale", ballRippleScale /* + soundScale */);
-		foreach (SkinnedMeshRenderer r in landMasks) r.SetBlendShapeWeight(0, maskCover + soundScale);
+		if (landMoveAmountVelocity != 0) foreach (Renderer r in ground) r.material.SetFloat("_Amount", landMoveAmount);
+		if (landMoveSpeedVelocity != 0) foreach (Renderer r in ground) r.material.SetFloat("_Speed", landMoveSpeed);
+		if (bgColorVelocity != 0) BG.color = new Color(255,255,255, bgColor);
+		if (maskCoverVelocity != 0) foreach (SkinnedMeshRenderer r in landMasks) r.SetBlendShapeWeight(0, maskCover + soundScale);
 		if (ballScaleVelocity != 0) ball.transform.localScale = new Vector3(ballScale, ballScale, ballScale);
-		if (ppVolumeFadeVelocity != 0) postProcessingVolume.weight = ppVolumeFade + soundScale;
+		if (bloomVolumeFadeVelocity != 0) bloomVolume.weight = bloomVolumeFade + soundScale;
+		if (dofVolumeFadeVelocity != 0) dofVolume.weight = dofVolumeFade + soundScale;
 	}
 
 	private void getMidi() {
