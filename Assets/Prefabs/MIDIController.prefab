@@ -19,7 +19,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4172140442892508}
-  - component: {fileID: 114112384564005762}
+  - component: {fileID: 114825866435724614}
   - component: {fileID: 114215886370857798}
   - component: {fileID: 114897640878354038}
   - component: {fileID: 114035642825580878}
@@ -169,17 +169,8 @@ MonoBehaviour:
   - 0
   - 0
   pads: 0000000000000000000000000000000000
---- !u!114 &114112384564005762
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1309276904290706}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfe8894fb566a4e0a8e93d8596028974, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  knobChanged: 0000000000000000000000000000000000
+  padsChanged: 0000000000000000000000000000000000
 --- !u!114 &114215886370857798
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -189,6 +180,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97d532d1c8e9543e6880b6eff1b80e1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &114825866435724614
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1309276904290706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfe8894fb566a4e0a8e93d8596028974, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &114897640878354038
@@ -215,15 +217,6 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 0.49967185
-      value: 0.49950778
-      inSlope: 3.0597236
-      outSlope: 3.0597236
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.04602493
     - serializedVersion: 3
       time: 1
       value: 1

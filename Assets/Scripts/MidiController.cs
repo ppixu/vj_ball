@@ -27,6 +27,9 @@ public class MidiController : MonoBehaviour {
 
 	private float[] hiddenValues = new float[17];
 
+	public GameObject PinkBG;
+	public GameObject CloudBall;
+	public GameObject CloudBG;
 	private float soundScale = 0;
 	private float ballScale = 2;
 	private float ballRippleScale = 2;
@@ -64,7 +67,7 @@ public class MidiController : MonoBehaviour {
 
 		// Map sliders to variables
 
-		ballScale = Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, .05f);
+		ballScale = c.knobChanged[0] ? Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[0]), ref ballScaleVelocity, .05f) : ballScale;
 		ballHeight = Mathf.SmoothDamp(ballHeight, 3 - 6 * curveInverse.Evaluate(c.knobs[1]), ref ballHeightVelocity, 0.05f);
    		ballSpeed = Mathf.SmoothDamp(ballSpeed, curveSmooth.Evaluate(c.knobs[2]), ref ballSpeedVelocity, .05f);
 		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[3]), ref ballFresnelVelocity, .05f);
@@ -86,7 +89,7 @@ public class MidiController : MonoBehaviour {
         thisAudioSource.GetSpectrumData(Samples, 0, fftWindow);
 
 		soundScale = Mathf.SmoothDamp(soundScale, Samples[sample] * (c.pads[1] ? 2 : 0), ref soundScaleVelocity, .01f);
-		// pad2
+		CloudBall.SetActive(c.pads[2] ? true : false);
 		// pad3
 		// pad4
 		// pad5
@@ -99,8 +102,8 @@ public class MidiController : MonoBehaviour {
 		// pad12
 		// pad13
 		// pad14
-		// pad15
-		// pad16
+		CloudBG.SetActive(c.pads[15] ? true : false);
+		PinkBG.SetActive(c.pads[16] ? true : false);
 
 
 
