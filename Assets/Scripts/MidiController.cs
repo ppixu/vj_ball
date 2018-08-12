@@ -83,6 +83,8 @@ public class MidiController : MonoBehaviour {
 		if(MidiInput.Receiving) 
 			getRelativeMidi();
 
+		getPads();
+
 
 		// Store previous
 
@@ -109,7 +111,7 @@ public class MidiController : MonoBehaviour {
 		// Sound react
         thisAudioSource.GetSpectrumData(Samples, 0, fftWindow);
 
-		soundScale = Mathf.SmoothDamp(soundScale, Samples[sample] * (c.pads[1] ? 2 : 0), ref soundScaleVelocity, .01f);
+		soundScale = Samples[sample] * (c.pads[1] ? 2 : 0);
 		CloudBall.SetActive(c.pads[2] ? true : false);
 		// pad3
 		// pad4
@@ -142,26 +144,22 @@ public class MidiController : MonoBehaviour {
 		if (dofVolumeFadeVelocity != 0) dofVolume.weight = dofVolumeFade + soundScale;
 	}
 
-	private void getMidi() {
+	private void getPads() {
 
-		for (int i = 0; i < 17; i++) {
-			if (MidiInput.GetKnob(i) >= 0) c.knobs[i] = MidiInput.GetKnob(i);
-		}
+		// for (int i = 0; i < 17; i++) {
+		// 	if (MidiInput.GetKnob(i) >= 0) c.knobs[i] = MidiInput.GetKnob(i);
+		// }
 		for (int i = 0; i < 17; i++) {
 			if (MidiInput.GetPad(i) == 1) { c.pads[i] = true; } else { c.pads[i] = false; }
 		}
 
 	}	
 
+
 	private void getRelativeMidi() {
 		int k = MidiInput.LatestKnob;
 		hiddenValues[k] += MidiInput.LatestValue;
 		c.knobs[k] = 1f + (-0.5f * (1f + Mathf.Cos(Mathf.PI * hiddenValues[k])));
-		// c.knobs[k] = Mathf.PingPong(hiddenValues[k], 1);
-		c.knobChanged[k] = true;
-		for (int i = 0; i < 17; i++) {
-			if (MidiInput.GetPad(i) == 1) { c.pads[i] = true; } else { c.pads[i] = false; }
-		}
 	}
 	IEnumerator BallLerpValue (string val, float end) {
 		float begin = ball.material.GetFloat(val);

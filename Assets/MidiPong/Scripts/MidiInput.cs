@@ -173,11 +173,11 @@ public class MidiInput : MonoBehaviour
                 latestValue = -0.01f * (64 - message.data2);
             }
             if (message.status == 0x90) {
-                Debug.Log("status: " + message.status + ", data1: " + message.data1 + ", data2: " + message.data2 + ", jes!");
+                receiving = false;
                 pads [ConvertToArturiaPads(message.data1)] = 1;
             }
             if (message.status == 0x80) {
-                Debug.Log("status: " + message.status + ", data1: " + message.data1 + ", data2: " + message.data2 + ", jes!");
+                receiving = false;
                 pads [ConvertToArturiaPads(message.data1)] = 0;
             }
         }
