@@ -13,6 +13,7 @@ public class MidiController : MonoBehaviour {
 	public AnimationCurve curveInverse;
 	public AnimationCurve curveIn;
 	public AnimationCurve curveOut;
+	public AnimationCurve curveDolly;
 	public GameObject models;
 	public Renderer ball;
 	public Renderer[] ground;
@@ -27,6 +28,9 @@ public class MidiController : MonoBehaviour {
 	public int sample = 0;
     FFTWindow fftWindow;
     AudioSource thisAudioSource;
+
+	public Camera[] cameras;
+	public GameObject cameraRoot;
 
 	private float[] hiddenValues = new float[17];
 
@@ -44,6 +48,8 @@ public class MidiController : MonoBehaviour {
 	private float ballFresnel = 1;
 	private float ballSpeed = 0;
 	private float maskCover = 0;
+	private float hitchCockZoom = 0;
+	private float hitchCockDist = 0;
 
 	private float landMoveAmount;
 	private float landMoveSpeed;
@@ -53,6 +59,7 @@ public class MidiController : MonoBehaviour {
 
 	private float landMoveAmountVelocity;
 	private float landMoveSpeedVelocity;
+	private float hitchCockVelocity = 0;
 	private float ballScaleVelocity = 0;
 	private float ballRippleScaleVelocity = 0;
 	private float ballHeightVelocity = 0;
@@ -66,6 +73,8 @@ public class MidiController : MonoBehaviour {
 	private float dofVolumeFade = 0;
 	private float dofVolumeFadeVelocity = 0;
 	private float soundScaleVelocity = 0;
+
+
 
 	// Smoothdamp amount
 	private float lag = .05f;
@@ -93,19 +102,21 @@ public class MidiController : MonoBehaviour {
 		ballHeight = Mathf.SmoothDamp(ballHeight, 3 - 6 * curveInverse.Evaluate(c.knobs[1]), ref ballHeightVelocity, lag);
 		ballFresnel = Mathf.SmoothDamp(ballFresnel, 100 * curveIn.Evaluate(c.knobs[2]), ref ballFresnelVelocity, lag);
 		landMoveAmount = Mathf.SmoothDamp(landMoveAmount, curveSmooth.Evaluate(c.knobs[3]), ref landMoveAmountVelocity, lag);
-		dofVolumeFade = Mathf.SmoothDamp(dofVolumeFade, c.knobs[4], ref dofVolumeFadeVelocity, lag);
+		// dofVolumeFade = Mathf.SmoothDamp(dofVolumeFade, c.knobs[4], ref dofVolumeFadeVelocity, lag);
+		hitchCockZoom = Mathf.SmoothDamp(hitchCockZoom, c.knobs[4], ref hitchCockVelocity, lag);
 		ballScale = Mathf.SmoothDamp(ballScale, 0.2f + 30 * curveSmooth.Evaluate(c.knobs[5]), ref ballScaleVelocity, lag);
    		ballRippleScale = Mathf.SmoothDamp(ballRippleScale, 100 * curveSmooth.Evaluate(c.knobs[6]), ref ballRippleScaleVelocity, lag);
 		bloomVolumeFade = Mathf.SmoothDamp(bloomVolumeFade, c.knobs[7], ref bloomVolumeFadeVelocity, lag);
 		maskCover = Mathf.SmoothDamp(maskCover, 2.84f + 2.2f * curveSmooth.Evaluate(c.knobs[8]), ref maskCoverVelocity, lag);
 
+		hitchCockDist = map(curveDolly.Evaluate(hitchCockZoom), 1.2f, .1f);
 
 		// Sound react
         thisAudioSource.GetSpectrumData(Samples, 0, fftWindow);
 
 		ShutterBall.SetActive(c.pads[1] ? true : false);
 		CloudBall.SetActive(c.pads[2] ? true : false);
-		// pad3
+		dofVolume.weight = c.pads[3] ? 1 : 0;
 		models.SetActive(c.pads[4] ? true : false);
 		soundScale = Samples[sample] * (c.pads[5] ? 2 : 0);
 		BG.color = new Color(255,255,255, c.pads[6] ? 1 : 0);
@@ -126,6 +137,13 @@ public class MidiController : MonoBehaviour {
 		if (ballScaleVelocity != 0) ball.transform.localScale = new Vector3(ballScale, ballScale, ballScale);
 		if (bloomVolumeFadeVelocity != 0) bloomVolume.weight = bloomVolumeFade + soundScale;
 		if (dofVolumeFadeVelocity != 0) dofVolume.weight = dofVolumeFade + soundScale;
+
+		if (hitchCockVelocity != 0) {
+			cameraRoot.transform.localScale = new Vector3(hitchCockDist,hitchCockDist,hitchCockDist);
+			foreach (Camera c in cameras) {
+				c.fieldOfView = 15 + 100 * hitchCockZoom;
+			}
+		}
 	}
 
 	private void getMidi() {
