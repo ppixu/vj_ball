@@ -311,6 +311,39 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  curveDolly:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 4.52005
+      outSlope: 4.52005
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.08805953
+    - serializedVersion: 3
+      time: 0.22417495
+      value: 0.5788686
+      inSlope: 1.6198126
+      outSlope: 1.6198126
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.044869028
+      outWeight: 0.062358286
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.22252902
+      outSlope: 0.22252902
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.080089554
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   models: {fileID: 0}
   ball: {fileID: 0}
   ground:
